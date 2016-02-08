@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <WinSock2.h>
 
 void ErrorHandling(char* message);
@@ -7,21 +8,30 @@ void ErrorHandling(char* message);
 int main(int argc, char* argv[])
 {
 	WSADATA wsaData;
-	unsigned short host_port = 0x1234;
-	unsigned short net_port;
-	unsigned long host_addr = 0x12345678;
-	unsigned long net_addr;
-
-	if(WSAStartup(MAKEWORD(2,2), &wsaData)!=0)
+	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
 		ErrorHandling("WASStartup() error!");
+	
+	//inet_addr 함수의 호출 예
+	{
+		char *addr = "127.212.124.78";
+		unsigned long conv_addr = inet_addr(addr);
+		if (conv_addr == INADDR_NONE)
+			printf("error occured!\n");
+		else
+			printf("network ordered integer addr: %#lx \n", conv_addr);
+	}
 
-	net_port = htons(host_port);
-	net_addr = htonl(host_addr);
+	{
+		struct sockaddr_in addr;
+		char *strPtr;
+		char strArr[20];
 
-	printf("Host ordered port : %#x \n", host_port);
-	printf("Network ordered port : %#x \n", net_port);
-	printf("Host ordered address : %#lx \n", host_addr);
-	printf("Network ordered address : %#lx \n", net_addr);
+		addr.sin_addr.s_addr = htonl(0x1020304);
+		strPtr = inet_ntoa(addr.sin_addr);
+		strcpy(strArr, strPtr);
+		printf("Dotted-Decimal notation3 %s \n", strArr);
+	}
+
 	WSACleanup();
 
 	return 0;
