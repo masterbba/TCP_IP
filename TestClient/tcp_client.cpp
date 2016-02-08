@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
 		ErrorHandling("WSAStartup() error!");
 
 	hSocket = socket(PF_INET, SOCK_STREAM, 0);
-	if(hSocket==INVALID_SOCKET)
+	if (hSocket == INVALID_SOCKET)
 		ErrorHandling("socket() error!");
 
 	memset(&servAddr, 0, sizeof(servAddr));
@@ -38,18 +38,28 @@ int main(int argc, char* argv[])
 	else
 		puts("Connected.................");
 
-	while (1)
-	{
-		fputs("Input message(Q to quit): ", stdout);
-		fgets(message, BUF_SIZE, stdin);
 
-		if (!strcmp(message, "q\n") || !strcmp(message, "Q\n"))
-			break;
-		send(hSocket, message, strlen(message), 0);
-		strLen = recv(hSocket, message, BUF_SIZE - 1, 0);
-		message[strLen] = 0;
-		printf("MEssage from server : %s", message);
+	fputs("Input argCount ", stdout);
+	fgets(message, BUF_SIZE, stdin);
+	int argCount = atoi(message);
+	send(hSocket, (char*)&argCount, sizeof(int), 0);
+
+	for (int i = 0; i < argCount; i++)
+	{
+		fputs("Input arg ", stdout);
+		fgets(message, BUF_SIZE, stdin);
+		int arg = atoi(message);
+		send(hSocket, (char*)&arg, sizeof(arg), 0);
 	}
+	
+	fputs("Input operator ", stdout);
+	fgets(message, BUF_SIZE, stdin);
+	send(hSocket, message, strlen(message), 0);
+	
+	int result = 0;
+	recv(hSocket, (char*)&result, sizeof(result), 0);	
+	printf("Message from server : %d", result);
+
 	closesocket(hSocket);
 	WSACleanup();
 	return 0;

@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
 
 	clntAdrSize = sizeof(clntAddr);
 
-	for (i = 0; i < 5; i++)
+	for (i = 0; i < 1; i++)
 	{
 		hClntSock = accept(hServSock, (SOCKADDR*)&clntAddr, &clntAdrSize);
 		if (hClntSock == INVALID_SOCKET)
@@ -50,8 +50,43 @@ int main(int argc, char* argv[])
 		else
 			printf("Connected client %d \n", i + 1);
 
-		while ((strLen = recv(hClntSock, message, BUF_SIZE, 0)) != 0)
-			send(hClntSock, message, strLen, 0);
+		int argCount = 0;
+		recv(hClntSock, (char*)&argCount, sizeof(int), 0);
+		
+		int* argList = (int*)malloc(sizeof(int)*argCount);
+		for (int l = 0; l < argCount; l++)
+			recv(hClntSock, (char*)&argList[l], sizeof(int), 0);
+		
+		recv(hClntSock, message, BUF_SIZE, 0);
+
+		int result = argList[0];
+
+		switch (message[0])
+		{
+		case '+':
+			for (int l = 1; l < argCount; l++) 
+				result += argList[l];
+			break;
+		case '-':
+			for (int l = 1; l < argCount; l++)
+				result -= argList[l];
+			break;
+		case '*':
+			for (int l = 1; l < argCount; l++)
+				result *= argList[l];
+			break;
+		case '/':
+			for (int l = 1; l < argCount; l++)
+				result /= argList[l];
+			break;
+		default:
+			printf("wtf???\n");
+			break;
+		}
+
+		printf("%d\n", result);
+		send(hClntSock, (char*)&result, sizeof(result), 0);
+		
 		closesocket(hClntSock);
 	}
 
