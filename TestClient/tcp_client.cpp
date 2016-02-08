@@ -11,7 +11,9 @@ int main(int argc, char* argv[])
 	SOCKADDR_IN servAddr;
 
 	char message[30];
-	int strLen;
+	int strLen = 0;
+	int idx = 0, readLen = 0;
+
 	if (argc != 3)
 	{
 		printf("Usage : %s <IP> <port>/n", argv[0]);
@@ -33,10 +35,16 @@ int main(int argc, char* argv[])
 	if(connect(hSocket, (SOCKADDR*)&servAddr, sizeof(servAddr))==SOCKET_ERROR)
 		ErrorHandling("connect() error!");
 
-	strLen = recv(hSocket, message, sizeof(message) - 1, 0);
-	if(strLen==-1)
-		ErrorHandling("read() error!");
+	while (readLen=recv(hSocket, &message[idx++], 1, 0))
+	{
+		if (readLen == -1)
+			ErrorHandling("read() error!");
+		strLen += readLen;
+	}
+	
 	printf("Message from server: %s\n", message);
+	printf("Function read Call count : %d", strLen);
+
 	closesocket(hSocket);
 	WSACleanup();
 	return 0;
