@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <WinSock2.h>
+
+#define BUF_SIZE 1024
 
 void ErrorHandling(char* message);
 
@@ -8,11 +11,9 @@ int main(int argc, char* argv[])
 {
 	WSADATA wsaData;
 	SOCKET hSocket;
+	char message[BUF_SIZE];
+	int strLen;
 	SOCKADDR_IN servAddr;
-
-	char message[30];
-	int strLen = 0;
-	int idx = 0, readLen = 0;
 
 	if (argc != 3)
 	{
@@ -32,19 +33,23 @@ int main(int argc, char* argv[])
 	servAddr.sin_addr.s_addr = inet_addr(argv[1]);
 	servAddr.sin_port = htons(atoi(argv[2]));
 
-	if(connect(hSocket, (SOCKADDR*)&servAddr, sizeof(servAddr))==SOCKET_ERROR)
+	if (connect(hSocket, (SOCKADDR*)&servAddr, sizeof(servAddr)) == SOCKET_ERROR)
 		ErrorHandling("connect() error!");
+	else
+		puts("Connected.................");
 
-	while (readLen=recv(hSocket, &message[idx++], 1, 0))
+	while (1)
 	{
-		if (readLen == -1)
-			ErrorHandling("read() error!");
-		strLen += readLen;
-	}
-	
-	printf("Message from server: %s\n", message);
-	printf("Function read Call count : %d", strLen);
+		fputs("Input message(Q to quit): ", stdout);
+		fgets(message, BUF_SIZE, stdin);
 
+		if (!strcmp(message, "q\n") || !strcmp(message, "Q\n"))
+			break;
+		send(hSocket, message, strlen(message), 0);
+		strLen = recv(hSocket, message, BUF_SIZE - 1, 0);
+		message[strLen] = 0;
+		printf("MEssage from server : %s", message);
+	}
 	closesocket(hSocket);
 	WSACleanup();
 	return 0;

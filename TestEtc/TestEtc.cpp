@@ -1,3 +1,5 @@
+#undef UNICODE
+#undef _UNICODE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,33 +9,24 @@ void ErrorHandling(char* message);
 
 int main(int argc, char* argv[])
 {
+	char *strAddr = "203.211.218.102:9190";
+	char strAddrBuf[50];
+	SOCKADDR_IN servAddr;
+	int size;
+	DWORD zzz;
+
 	WSADATA wsaData;
+
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
-		ErrorHandling("WASStartup() error!");
-	
-	//inet_addr 함수의 호출 예
-	{
-		char *addr = "127.212.124.78";
-		unsigned long conv_addr = inet_addr(addr);
-		if (conv_addr == INADDR_NONE)
-			printf("error occured!\n");
-		else
-			printf("network ordered integer addr: %#lx \n", conv_addr);
-	}
+		ErrorHandling("WSAStartup() error!");
 
-	{
-		struct sockaddr_in addr;
-		char *strPtr;
-		char strArr[20];
-
-		addr.sin_addr.s_addr = htonl(0x1020304);
-		strPtr = inet_ntoa(addr.sin_addr);
-		strcpy(strArr, strPtr);
-		printf("Dotted-Decimal notation3 %s \n", strArr);
-	}
+	size = sizeof(servAddr);
+	WSAStringToAddress(strAddr, AF_INET, NULL, (SOCKADDR*)&servAddr, &size);
+	zzz = sizeof(strAddrBuf);
+	WSAAddressToString((SOCKADDR*)&servAddr, sizeof(servAddr), NULL, strAddrBuf, &zzz);
+	printf("Second conv result : %s \n", strAddrBuf);
 
 	WSACleanup();
-
 	return 0;
 }
 
