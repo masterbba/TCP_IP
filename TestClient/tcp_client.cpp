@@ -4,6 +4,8 @@
 #include <WinSock2.h>
 
 #define BUF_SIZE 1024
+#define RLT_SIZE 4
+#define OPSZ 4
 
 void ErrorHandling(char* message);
 
@@ -11,8 +13,8 @@ int main(int argc, char* argv[])
 {
 	WSADATA wsaData;
 	SOCKET hSocket;
-	char message[BUF_SIZE];
-	int strLen;
+	char opmsg[BUF_SIZE];
+	int result, opndCnt, i;
 	SOCKADDR_IN servAddr;
 
 	if (argc != 3)
@@ -37,29 +39,22 @@ int main(int argc, char* argv[])
 		ErrorHandling("connect() error!");
 	else
 		puts("Connected.................");
-
-
-	fputs("Input argCount ", stdout);
-	fgets(message, BUF_SIZE, stdin);
-	int argCount = atoi(message);
-	send(hSocket, (char*)&argCount, sizeof(int), 0);
-
-	for (int i = 0; i < argCount; i++)
+	
+	fputs("Operand Count: ", stdout);
+	scanf("%d", &opndCnt);
+	opmsg[0] = (char)opndCnt;
+	for (i = 0; i < opndCnt; i++)
 	{
-		fputs("Input arg ", stdout);
-		fgets(message, BUF_SIZE, stdin);
-		int arg = atoi(message);
-		send(hSocket, (char*)&arg, sizeof(arg), 0);
+		printf("Operand %d : ", i + 1);
+		scanf("%d", (int*)&opmsg[i*OPSZ + 1]);
 	}
-	
-	fputs("Input operator ", stdout);
-	fgets(message, BUF_SIZE, stdin);
-	send(hSocket, message, strlen(message), 0);
-	
-	int result = 0;
-	recv(hSocket, (char*)&result, sizeof(result), 0);	
-	printf("Message from server : %d", result);
+	fgetc(stdin);
+	fputs("Operator : ", stdout);
+	scanf("%c", &opmsg[opndCnt*OPSZ + 1]);
+	send(hSocket, opmsg, opndCnt*OPSZ + 2, 0);
+	recv(hSocket, (char*)&result, RLT_SIZE, 0 );
 
+	printf("Operation result: %d \n", result);
 	closesocket(hSocket);
 	WSACleanup();
 	return 0;

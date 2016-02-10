@@ -4,15 +4,17 @@
 #include <WinSock2.h>
 
 #define BUF_SIZE 1024
+#define OPSZ 4
 void ErrorHandling(char* message);
+int calculate(int opnum, int opnds[], char oprator);
 
 int main(int argc, char* argv[])
 {
 	WSADATA wasData;
 	SOCKET hServSock, hClntSock;	
-	char message[BUF_SIZE];
-	int strLen, i;
-
+	char opinfo[BUF_SIZE];
+	int result, opndCnt, i;
+	int recvCnt, recvLen;
 	SOCKADDR_IN servAddr, clntAddr;
 	int clntAdrSize;
 
@@ -44,49 +46,19 @@ int main(int argc, char* argv[])
 
 	for (i = 0; i < 1; i++)
 	{
+		opndCnt = 0;
 		hClntSock = accept(hServSock, (SOCKADDR*)&clntAddr, &clntAdrSize);
-		if (hClntSock == INVALID_SOCKET)
-			ErrorHandling("accept() error");
-		else
-			printf("Connected client %d \n", i + 1);
+		recv(hClntSock, (char*)&opndCnt, 1, 0);
 
-		int argCount = 0;
-		recv(hClntSock, (char*)&argCount, sizeof(int), 0);
-		
-		int* argList = (int*)malloc(sizeof(int)*argCount);
-		for (int l = 0; l < argCount; l++)
-			recv(hClntSock, (char*)&argList[l], sizeof(int), 0);
-		
-		recv(hClntSock, message, BUF_SIZE, 0);
-
-		int result = argList[0];
-
-		switch (message[0])
+		recvLen = 0;
+		while ((opndCnt*OPSZ + 1)>recvLen)
 		{
-		case '+':
-			for (int l = 1; l < argCount; l++) 
-				result += argList[l];
-			break;
-		case '-':
-			for (int l = 1; l < argCount; l++)
-				result -= argList[l];
-			break;
-		case '*':
-			for (int l = 1; l < argCount; l++)
-				result *= argList[l];
-			break;
-		case '/':
-			for (int l = 1; l < argCount; l++)
-				result /= argList[l];
-			break;
-		default:
-			printf("wtf???\n");
-			break;
+			recvCnt = recv(hClntSock, &opinfo[recvLen], BUF_SIZE - 1, 0);
+			recvLen += recvCnt;
 		}
 
-		printf("%d\n", result);
+		result = calculate(opndCnt, (int*)opinfo, opinfo[recvLen - 1]);
 		send(hClntSock, (char*)&result, sizeof(result), 0);
-		
 		closesocket(hClntSock);
 	}
 
@@ -100,4 +72,26 @@ void ErrorHandling(char* message)
 	fputs(message, stderr);
 	fputc('\n', stderr);
 	exit(1);
+}
+
+int calculate(int opnum, int opnds[], char op)
+{
+	int result = opnds[0], i;
+	switch (op)
+	{
+	case '+':
+		for (i = 1; i < opnum; i++) result += opnds[i];
+		break;
+	case '-':
+		for (i = 1; i < opnum; i++) result -= opnds[i];
+		break;
+	case '*':
+		for (i = 1; i < opnum; i++) result *= opnds[i];
+		break;
+	case '/':
+		for (i = 1; i < opnum; i++) result /= opnds[i];
+		break;
+	}
+
+	return result;
 }
