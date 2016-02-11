@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="TestEtc.cpp">
+    <ClCompile Include="GetHostByName.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
