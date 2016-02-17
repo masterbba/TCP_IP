@@ -11,7 +11,7 @@ int main(int argc, char* argv[])
 {
 	WSADATA wsaData;
 	SOCKET hSocket;
-	char message[BUF_SIZE];
+	char message[BUF_SIZE] = "abcdefg";
 	int strLen;
 	SOCKADDR_IN servAddr;
 
@@ -40,15 +40,16 @@ int main(int argc, char* argv[])
 
 	while (1)
 	{
-		fputs("Input message(Q to quit): ", stdout);
+		/*fputs("Input message(Q to quit): ", stdout);
 		fgets(message, BUF_SIZE, stdin);
 
 		if (!strcmp(message, "q\n") || !strcmp(message, "Q\n"))
-			break;
+			break;*/
 		send(hSocket, message, strlen(message), 0);
 		strLen = recv(hSocket, message, BUF_SIZE - 1, 0);
 		message[strLen] = 0;
-		printf("MEssage from server : %s", message);
+		//printf("MEssage from server : %s\n", message);
+		Sleep(100);
 	}
 	closesocket(hSocket);
 	WSACleanup();

@@ -96,8 +96,10 @@ int main(int argc, char* argv[])
 						puts("Read Error");
 						break;
 					}
+					printf("%d read Start\n", sigEventIdx);
 					strLen = recv(hSockArr[sigEventIdx], msg, sizeof(msg), 0);
 					send(hSockArr[sigEventIdx], msg, strLen, 0);
+					printf("%d read End\n", sigEventIdx);
 				}
 
 				if (netEvents.lNetworkEvents & FD_CLOSE)
