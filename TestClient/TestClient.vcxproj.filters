@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="tcp_client.cpp">
+    <ClCompile Include="OverlappedSend_win.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
