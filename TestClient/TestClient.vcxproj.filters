@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="OverlappedSend_win.cpp">
+    <ClCompile Include="StableEchoClnt_win.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
