@@ -38,21 +38,28 @@ int main(int argc, char* argv[])
 	dataBuf.len = strlen(msg) + 1;
 	dataBuf.buf = msg;
 
-	if (WSASend(hSocket, &dataBuf, 1, &sendBytes, 0, &overlapped, NULL) == SOCKET_ERROR)
+	int curIndex = 0;
+	while (1)
 	{
-		if (WSAGetLastError() == WSA_IO_PENDING)
+		sprintf(msg, "%d", curIndex);
+		curIndex += 1;
+		if (WSASend(hSocket, &dataBuf, 1, &sendBytes, 0, &overlapped, NULL) == SOCKET_ERROR)
 		{
-			puts("Background data send");
-			WSAWaitForMultipleEvents(1, &evObj, TRUE, WSA_INFINITE, FALSE);
-			WSAGetOverlappedResult(hSocket, &overlapped, &sendBytes, FALSE, NULL);
+			if (WSAGetLastError() == WSA_IO_PENDING)
+			{
+				puts("Background data send");
+				WSAWaitForMultipleEvents(1, &evObj, TRUE, WSA_INFINITE, FALSE);
+				WSAGetOverlappedResult(hSocket, &overlapped, &sendBytes, FALSE, NULL);
+			}
+			else
+			{
+				ErrorHandling("WSASend() error");
+			}
 		}
-		else
-		{
-			ErrorHandling("WSASend() error");
-		}
-	}
 
-	printf("Send data size : %d \n", sendBytes);
+		printf("Send data size : %d \n", sendBytes);
+	}
+	
 	WSACloseEvent(evObj);
 	closesocket(hSocket);
 	WSACleanup();

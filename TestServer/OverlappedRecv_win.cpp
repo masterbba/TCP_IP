@@ -1,23 +1,27 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <WinSock2.h>
 
 #define BUF_SIZE 1024
+void CALLBACK CompRutine(DWORD, DWORD, LPWSAOVERLAPPED, DWORD);
 void ErrorHandling(char* message);
+
+WSABUF databuf;
+char buf[BUF_SIZE];
+DWORD recvBytes = 0;
 
 int main(int argc, char* argv[])
 {
 	WSADATA wsaData;
 	SOCKET hLisnSock, hRecvSock;
 	SOCKADDR_IN lisnAdr, recvAdr;
-	int recvAdrSz;
+	int idx, recvAdrSz;
+	DWORD flags = 0;
 
-	WSABUF databuf;
 	WSAEVENT evObj;
 	WSAOVERLAPPED overlapped;
 
-	char buf[BUF_SIZE];
-	DWORD recvBytes = 0, flags = 0;
 	if (argc != 2)
 	{
 		printf("Usage : %s <port>\n", argv[0]);
@@ -39,33 +43,51 @@ int main(int argc, char* argv[])
 
 	recvAdrSz = sizeof(recvAdr);
 	hRecvSock = accept(hLisnSock, (SOCKADDR*)&recvAdr, &recvAdrSz);
+	if (hRecvSock == INVALID_SOCKET)
+		ErrorHandling("accept() error");
 
-	evObj = WSACreateEvent();
+
 	memset(&overlapped, 0, sizeof(overlapped));
-	overlapped.hEvent = evObj;
 	databuf.len = BUF_SIZE;
 	databuf.buf = buf;
+	evObj = WSACreateEvent();
 
-	if (WSARecv(hRecvSock, &databuf, 1, &recvBytes, &flags, &overlapped, NULL) == SOCKET_ERROR)
+
+	while (1)
 	{
-		if (WSAGetLastError() == WSA_IO_PENDING)
+		if (WSARecv(hRecvSock, &databuf, 1, &recvBytes, &flags, &overlapped, CompRutine) == SOCKET_ERROR)
 		{
-			puts("Background data receive");
-			WSAWaitForMultipleEvents(1, &evObj, TRUE, WSA_INFINITE, FALSE);
-			WSAGetOverlappedResult(hRecvSock, &overlapped, &recvBytes, FALSE, NULL);
+			if (WSAGetLastError() == WSA_IO_PENDING)
+			{
+				puts("Background data receive");
+			}
 		}
+
+		idx = WSAWaitForMultipleEvents(1, &evObj, FALSE, WSA_INFINITE, TRUE);
+		if (idx == WAIT_IO_COMPLETION)
+			puts("overlapped I/O Completed");
 		else
-		{
 			ErrorHandling("WSARecv() error");
-		}
 	}
 
-	printf("Received message: %s \n", buf);
 	WSACloseEvent(evObj);
 	closesocket(hRecvSock);
 	closesocket(hLisnSock);
 	WSACleanup();
 	return 0;
+}
+
+void CALLBACK CompRutine(DWORD dwError, DWORD szRecvBytes, LPWSAOVERLAPPED lpOverlapped, DWORD flags)
+{
+	if (dwError != 0)
+	{
+		ErrorHandling("CompRoutine error");
+	}
+	else
+	{
+		recvBytes = szRecvBytes;
+		printf("Receive Message : %s \n", buf);
+	}
 }
 
 void ErrorHandling(char* message)
