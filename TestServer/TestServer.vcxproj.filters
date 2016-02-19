@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CmpRouEchoServ_win.cpp">
+    <ClCompile Include="IOCPEchoServ_win.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

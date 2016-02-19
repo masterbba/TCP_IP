@@ -10,7 +10,7 @@ int main(int argc, char* argv[])
 	WSADATA wsaData;
 	SOCKET hSocket;
 	SOCKADDR_IN sendAdr;
-	char message[BUF_SIZE];
+	char message[BUF_SIZE] = "message";
 	int strLen, readLen;
 
 	if (argc != 3)
@@ -37,10 +37,10 @@ int main(int argc, char* argv[])
 
 	while (1)
 	{
-		fputs("Input message(Q to quit): ", stdout);
+		/*fputs("Input message(Q to quit): ", stdout);
 		fgets(message, BUF_SIZE, stdin);
 		if (!strcmp(message, "q\n") || !strcmp(message, "Q\n"))
-			break;
+			break;*/
 		strLen = strlen(message);
 		send(hSocket, message, strLen, 0);
 		readLen = 0;
